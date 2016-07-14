@@ -7,12 +7,13 @@ var Transform = stream.Transform || require('readable-stream').Transform;
 
 util.inherits(StringTransform, Transform);
 
-function StringTransform (fn, opts) {
+function StringTransform (file, fn, opts) {
   if (!(this instanceof StringTransform)) return new StringTransform(fn, opts);
 
   opts = opts || {};
   
   Transform.call(this, opts);
+  this.file = file;
   this.transformFn = fn;
   this.string = '';
 }
@@ -24,7 +25,7 @@ StringTransform.prototype._transform = function (chunk, encoding, cb) {
 
 StringTransform.prototype._flush = function (cb) {
   try {
-    var transformed = this.transformFn(this.string);
+    var transformed = this.transformFn(this.string, this.file);
     this.push(transformed);
     cb();
   } catch (err) {
@@ -44,6 +45,6 @@ var go = module.exports =
  */
 function transformify(fn) {
   return function (file) {
-    return new StringTransform(fn);  
+    return new StringTransform(file, fn);  
   }
 };
